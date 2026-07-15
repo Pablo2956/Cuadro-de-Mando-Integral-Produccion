@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generador de Cuadro de Mando Integral — Producción</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{\n    --bg:#0B2138;
+    --bg-panel:#0F2A45;
+    --bg-panel-2:#123253;
+    --grid-line: rgba(111,183,224,0.14);
+    --border: rgba(159,179,200,0.25);
+    --amber:#F0A83C;
+    --cyan:#6FB7E0;
+    --green:#6FBF8B;
+    --red:#EF4444;
+    --paper:#EDEEF0;
+    --dim:#9FB3C8;
+    --radius: 3px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--paper);font-family:'Inter',sans-serif;font-size:14px;line-height:1.5;}
+  body{
+    background-image: 
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 24px 24px;
+    background-position: center top;
+    padding: 40px 20px;
+    display:flex;
+    justify-content:center;
+  }
+  .container{
+    width:100%;
+    max-width:920px;
+    background:rgba(11,33,56,0.92);
+    border:1px solid var(--border);
+    padding:40px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+  }
+  .header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    border-bottom:1px solid var(--border);
+    padding-bottom:24px;
+    margin-bottom:32px;
+    gap:20px;
+  }
+  .header-left{flex:1;}
+  .header-tag{
+    font-family:'IBM Plex Mono',monospace;
+    color:var(--amber);
+    font-size:0.85rem;
+    text-transform:uppercase;
+    letter-spacing:0.1em;
+    margin-bottom:8px;
+  }
+  h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:2.2rem;
+    font-weight:700;
+    margin:0 0 12px 0;
+    line-height:1.15;
+    letter-spacing:-0.02em;
+  }
+  .header-desc{color:var(--dim);font-size:1rem;margin:0;max-width:580px;}
+  .meta-grid{
+    display:grid;
+    grid-template-columns:120px 80px;
+    gap:1px;
+    background:var(--border);
+    border:1px solid var(--border);
+  }
+  .meta-item{
+    background:var(--bg-panel);
+    padding:8px 12px;
+    font-family:'IBM Plex Mono',monospace;
+  }
+  .meta-label{font-size:0.65rem;color:var(--cyan);text-transform:uppercase;margin-bottom:2px;}
+  .meta-val{font-size:0.85rem;font-weight:600;}
+  
+  .section-title{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:1.1rem;
+    font-weight:600;
+    color:var(--cyan);
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    margin-bottom:20px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .section-title::after{
+    content:'';
+    flex:1;
+    height:1px;
+    background:linear-gradient(90deg, var(--border), transparent);
+  }
+  
+  .panel{
+    background:var(--bg-panel);
+    border:1px solid var(--border);
+    padding:24px;
+    margin-bottom:24px;
+  }
+  .fields-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));
+    gap:20px;
+    margin-bottom: 24px;
+  }
+  .field-group{display:flex;flex-direction:column;gap:8px;}
+  .field-group label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.75rem;
+    color:var(--dim);
+    text-transform:uppercase;
+  }
+  .field-group select, .field-group input[type="range"]{
+    background:var(--bg-panel-2);
+    border:1px solid var(--border);
+    color:var(--paper);
+    padding:10px 12px;
+    font-family:inherit;
+    font-size:0.95rem;
+    outline:none;
+  }
+  .field-group select:focus{border-color:var(--cyan);}
+
+  /* Estilos de los Sliders de Simulación */
+  .slider-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .slider-container input[type="range"] {
+    flex: 1;
+    height: 6px;
+    background: var(--bg-panel-2);
+    outline: none;
+    accent-color: var(--amber);
+    cursor: pointer;
+    border: none;
+    padding: 0;
+  }
+  .slider-val {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--amber);
+    min-width: 40px;
+    text-align: right;
+  }
+  
+  .pills-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.75rem;
+    color:var(--dim);
+    text-transform:uppercase;
+    margin-bottom:12px;
+  }
+  .pills-container{display:flex;flex-wrap:wrap;gap:8px;}
+  .pill{
+    background:rgba(18,50,83,0.4);
+    border:1px solid var(--border);
+    padding:8px 16px;
+    font-size:0.85rem;
+    cursor:pointer;
+    user-select:none;
+    color:var(--dim);
+    transition:all 0.15s ease;
+  }
+  .pill:hover{border-color:var(--cyan);color:var(--paper);}
+  .pill.active{
+    background:var(--cyan);
+    border-color:var(--cyan);
+    color:var(--bg);
+    font-weight:500;
+  }
+  
+  .action-btn{
+    width:100%;
+    background:var(--amber);
+    color:var(--bg);
+    border:none;
+    padding:16px;
+    font-family:'Space Grotesk',sans-serif;
+    font-size:1.1rem;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.02em;
+    cursor:pointer;
+    margin-top:8px;
+    box-shadow: 0 4px 15px rgba(240,168,60,0.25);
+  }
+  .action-btn:hover{background:#f1b354;}
+  
+  .results{display:none;margin-top:40px;}
+  .results.show{display:block;}
+  
+  /* DIAGNÓSTICO DE PARADAS & CUELLOS */
+  .diagnostico-alerta {
+    background: rgba(240, 168, 60, 0.08);
+    border: 1px solid var(--amber);
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .diagnostico-alerta h4 {
+    margin: 0 0 8px 0;
+    font-family: 'Space Grotesk', sans-serif;
+    color: var(--amber);
+    font-size: 1.1rem;
+    text-transform: uppercase;
+  }
+  .diagnostico-alerta p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--paper);
+    line-height: 1.5;
+  }
+
+  .results-meta{
+    border-left:3px solid var(--cyan);
+    padding-left:16px;
+    margin-bottom:24px;
+    font-size:1.15rem;
+    font-family:'Space Grotesk',sans-serif;
+  }
+  .results-meta b{color:var(--cyan);}
+  
+  .objective{
+    background:var(--bg-panel-2);
+    border:1px solid var(--border);
+    padding:16px;
+    margin-bottom:32px;
+    font-size:0.95rem;
+  }
+  .objective span{
+    display:block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.65rem;
+    color:var(--cyan);
+    text-transform:uppercase;
+    margin-bottom:4px;
+  }
+  
+  .quad-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(380px, 1fr));
+    gap:24px;
+    margin-bottom:40px;
+  }
+  .card{
+    background:var(--bg-panel);
+    border:1px solid var(--border);
+    padding:24px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+  }
+  .card-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    border-bottom:1px solid var(--border);
+    padding-bottom:12px;
+    margin-bottom:16px;
+  }
+  .card-perspective{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:1.1rem;
+    font-weight:600;
+  }
+  .card-theme{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.65rem;
+    color:var(--dim);
+    text-transform:uppercase;
+  }
+  .kpi-list{list-style:none;padding:0;margin:0 0 20px 0;}
+  .kpi-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    padding:6px 0;
+    border-bottom:1px dashed rgba(159,179,200,0.15);
+  }
+  .kpi-item:last-child{border-bottom:none;}
+  .kpi-name{color:var(--dim);font-size:0.9rem;}
+  .kpi-val{
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:600;
+    color:var(--paper);
+  }
+  .kpi-val.highlight{color:var(--amber);}
+  .kpi-val.green{color:var(--green);}
+  .kpi-val.red{color:var(--red);}
+  
+  .card-automation{
+    background:var(--bg-panel-2);
+    border:1px solid var(--border);
+    padding:16px;
+  }
+  .auto-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.65rem;
+    color:var(--cyan);
+    text-transform:uppercase;
+    margin-bottom:4px;
+  }
+  .auto-title{font-size:0.9rem;font-weight:600;margin-bottom:4px;color:var(--amber);}
+  .auto-desc{font-size:0.85rem;color:var(--dim);margin:0;line-height:1.4;}
+  
+  .footer-cta{
+    text-align:center;
+    border-top:1px solid var(--border);
+    padding-top:32px;
+  }
+  .footer-cta p{color:var(--dim);margin:0 0 24px 0;}
+  
+  .cta-btn{
+    display:inline-block;
+    background:var(--green);
+    color:var(--bg);
+    text-decoration:none;
+    padding:16px 32px;
+    font-family:'Space Grotesk',sans-serif;
+    font-size:1.1rem;
+    font-weight:700;
+    text-transform:uppercase;
+    box-shadow: 0 4px 15px rgba(111,191,139,0.25);
+  }
+  .cta-btn:hover{background:#7fcca4;}
+  .cta-note{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.75rem;
+    color:var(--dim);
+    margin-top:12px;
+  }
+
+  /* Footer de Contacto Fijo Adicional */
+  .footer-contact {
+    margin-top: 40px;
+    border-top: 2px dashed var(--border);
+    padding-top: 24px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 15px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+  }
+  .footer-contact a {
+    color: var(--cyan);
+    text-decoration: none;
+  }
+  
+  @media(max-width:768px){
+    body{padding:20px 10px;}
+    .container{padding:20px;}
+    .header{flex-direction:column;}
+    .meta-grid{grid-template-columns:repeat(2, 1fr);width:100%;}
+    .quad-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  
+  <div class="header">
+    <div class="header-left">
+      <div class="header-tag">Herramienta de Diagnóstico • MG Servicios & Proyectos Integrales</div>
+      <h1>Cuadro de Mando Integral para Producción</h1>
+      <p class="header-desc">Describe tu planta, simula fallas de máquinas y ausentismo de operarios en tiempo real, y obtén un mapa estratégico de control con indicadores de alto impacto.</p>
+    </div>
+    <div class="meta-grid">
+      <div class="meta-item"><div class="meta-label">Proyecto</div><div class="meta-val" style="font-size: 0.75em;">CMI-PROD</div></div>
+      <div class="meta-item"><div class="meta-label">Versión</div><div class="meta-val">11.3</div></div>
+      <div class="meta-item"><div class="meta-label">Fecha</div><div class="meta-val" style="font-size: 0.75em;">15/07/2026</div></div>
+      <div class="meta-item"><div class="meta-label">Escala</div><div class="meta-val">Industrial</div></div>
+    </div>
+  </div>
+
+  <div class="section-title">01 • Datos de tu planta</div>
+  <div class="panel">
+    <div class="fields-grid">
+      <div class="field-group">
+        <label for="sector">Sector</label>
+        <select id="sector">
+          <option value="plastico">Plástico e inyección</option>
+          <option value="metalm">Metalmecánica y Manufactura</option>
+          <option value="alimentos">Alimentos y Bebidas</option>
+          <option value="packaging">Embalajes / Packaging</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label for="tipo">Tipo de producción</label>
+        <select id="tipo">
+          <option value="pedido">Bajo pedido (a medida)</option>
+          <option value="lotes">Por lotes (Batch)</option>
+          <option value="continua">Continua</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label for="digitalizacion">Nivel de digitalización actual</label>
+        <select id="digitalizacion">
+          <option value="papel">Manual, en papel</option>
+          <option value="excel">Semi-manual (Hojas de cálculo / Excel)</option>
+          <option value="erp">Básico (ERP sin conexión a planta)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="fields-grid" style="border-top: 1px dashed var(--border); padding-top: 20px;">
+      <div class="field-group">
+        <label>⚙️ Máquinas Operativas (Turno Actual)</label>
+        <div class="slider-container">
+          <input type="range" id="slider_maquinas" min="1" max="5" value="5" oninput="actualizarSlider('txt_maquinas', this.value)">
+          <span id="txt_maquinas" class="slider-val">5</span>
+        </div>
+      </div>
+      <div class="field-group">
+        <label>👥 Operarios en Turno</label>
+        <div class="slider-container">
+          <input type="range" id="slider_operarios" min="1" max="5" value="5" oninput="actualizarSlider('txt_operarios', this.value)">
+          <span id="txt_operarios" class="slider-val">5</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">03 • Principales dolores hoy (Elige hasta 3)</div>
+  <div class="panel">
+    <div class="pills-label">Selecciona los desafíos que más impactan hoy tu rentabilidad:</div>
+    <div class="pills-container" id="pills_container">
+      </div>
+  </div>
+
+  <button class="action-btn" id="generate_btn">Generar cuadro de mando →</button>
+
+  <div class="results" id="results">
+    </div>
+
+  <div class="footer-contact">
+    <div>📞 Llamada Directa: <a href="tel:+56940153797">+569 4015 3797</a></div>
+    <div>💬 WhatsApp: <a href="https://wa.me/56944983526" target="_blank">+569 4498 3526</a></div>
+    <div>📸 Instagram: <a href="https://www.instagram.com/mgledlights/" target="_blank">@mgledlights</a></div>
+  </div>
+
+</div>
+
+<script>
+// Base de Datos de Dolores y sus Estrategias Asociadas
+const pains = {
+  paradas: { text: 'Paradas no planificadas', automation: { title: 'Mantenimiento Predictivo con Sensores IoT', desc: 'Monitoreo dinámico de vibración y corriente en motores de extrusoras para detectar fallas críticas antes de que la máquina se detenga por completo.' } },
+  trazabilidad: { text: 'Falta de trazabilidad', automation: { title: 'Sistema de Captura de Datos IoT (Trazabilidad Automática)', desc: 'Registro en tiempo real de cada orden de producción asignada mediante RFID o códigos de barras integrados a los PLC.' } },
+  tiempos: { text: 'Tiempos muertos en cambios de producto', automation: { title: 'Optimización de Cambios con Controladores de Recetas (HMI)', desc: 'Carga automática de recetas desde la pantalla HMI directo a los variadores y servomotores para agilizar el cambio de formato.' } },
+  calidad: { text: 'Calidad inconsistente / rechazos', automation: { title: 'Control Automático en Bucle Cerrado', desc: 'Sensores analógicos que corrigen automáticamente variables operativas críticas (ej: temperatura de inyección) sin intervención humana.' } },
+  retrasos: { text: 'Entregas fuera de plazo', automation: { title: 'Visualización de Progreso en Tiempo Real (Andon)', desc: 'Monitoreo automático de la velocidad de línea frente al objetivo para alertar desviaciones de inmediato.' } },
+  visibilidad: { text: 'Sin visibilidad de datos en tiempo real', automation: { title: 'Dashboard SCADA Centralizado de Planta', desc: 'Conexión de todos los sensores de planta hacia una única interfaz gráfica que consolida los KPIs por turno.' } }
+};
+
+// Renderizado inicial de píldoras
+const pillsContainer = document.getElementById('pills_container');
+Object.keys(pains).forEach(key => {
+  const pill = document.createElement('div');
+  pill.className = 'pill';
+  pill.dataset.key = key;
+  pill.innerText = pains[key].text;
+  pill.addEventListener('click', () => {
+    const activePills = pillsContainer.querySelectorAll('.pill.active');
+    if(pill.classList.contains('active')){
+      pill.classList.remove('active');
+    } else {
+      if(activePills.length < 3){
+        pill.classList.add('active');
+      }
+    }
+  });
+  pillsContainer.appendChild(pill);
+});
+
+// Función para actualizar los textos de los Sliders
+function actualizarSlider(id, val) {
+  document.getElementById(id).innerText = val;
+}
+
+// BOTÓN GENERAR CUADRO DE MANDO
+document.getElementById('generate_btn').addEventListener('click', () => {
+  const sector = document.getElementById('sector').value;
+  const tipo = document.getElementById('tipo').value;
+  const digitalizacion = document.getElementById('digitalizacion').value;
+
+  const mActivas = parseInt(document.getElementById('slider_maquinas').value);
+  const oActivos = parseInt(document.getElementById('slider_operarios').value);
+
+  // Lógica de Cuellos de Botella (TOC)
+  const capMaquinas = mActivas / 5;
+  const capOperarios = oActivos / 5;
+  const capRealPlanta = Math.min(capMaquinas, capOperarios);
+
+  let cuelloBotella = "Balanceado (Operación óptima)";
+  let diagnosticoHTML = "";
+  let procesosAuto = { title: 'Estabilización de Línea', desc: 'Monitoreo de estabilidad y control automático de velocidad.' };
+
+  if (capMaquinas < capOperarios) {
+    cuelloBotella = "Maquinaria (Falla mecánica o parada técnica)";
+    diagnosticoHTML = `
+      <div class="diagnostico-alerta">
+        <h4>⚠️ Alerta: Restricción Crítica en Maquinaria</h4>
+        <p>Tienes <strong>${5 - mActivas} máquina(s) detenida(s)</strong> en este turno. La capacidad real de tu planta está estrangulada al <strong>${Math.round(capRealPlanta * 100)}%</strong>. Tus operarios están subutilizados esperando reparaciones técnicas.</p>
+      </div>`;
+    procesosAuto = { 
+      title: 'Monitoreo de Disponibilidad de Activos (OEE)', 
+      desc: 'Detección automática de microparadas de máquinas mediante el PLC para reducir el tiempo medio de reparación (MTTR).' 
+    };
+  } else if (capOperarios < capMaquinas) {
+    cuelloBotella = "Mano de Obra (Ausentismo o falta de polivalencia)";
+    diagnosticoHTML = `
+      <div class="diagnostico-alerta">
+        <h4>⚠️ Alerta: Restricción Crítica de Mano de Obra</h4>
+        <p>Déficit de <strong>${5 - oActivos} operario(s)</strong> en el turno. Tus máquinas físicas están disponibles pero no hay personal para cargarlas o supervisarlas. Capacidad máxima real limitada al <strong>${Math.round(capRealPlanta * 100)}%</strong>.</p>
+      </div>`;
+    procesosAuto = { 
+      title: 'Automatización de Alimentación / Fin de Línea', 
+      desc: 'Implementar sistemas automáticos de dosificación neumática o apilamiento automático para que la planta opere de forma continua sin depender del ausentismo.' 
+    };
+  } else if (mActivas < 5 && oActivos < 5) {
+    cuelloBotella = "Inestabilidad Mixta (Línea crítica)";
+    diagnosticoHTML = `
+      <div class="diagnostico-alerta" style="border-color: var(--red); background: rgba(239,68,68,0.08);">
+        <h4 style="color: var(--red);">🚨 Alerta Crítica: Restricción de Recursos Combinados</h4>
+        <p>Operación inestable. Sufres pérdidas concurrentes de máquinas y operarios. Tu planta trabaja desbalanceada al <strong>${Math.round(capRealPlanta * 100)}%</strong> de capacidad. Riesgo extremo de no cumplimiento.</p>
+      </div>`;
+    procesosAuto = { 
+      title: 'Centralización de Planta mediante HMI / SCADA', 
+      desc: 'Visualización unificada que permite al escaso personal disponible reaccionar rápidamente a fallas en múltiples máquinas desde una pantalla.' 
+    };
+  } else {
+    diagnosticoHTML = `
+      <div class="diagnostico-alerta" style="border-color: var(--green); background: rgba(111,191,139,0.08);">
+        <h4 style="color: var(--green);">✅ Capacidad Nominal al 100%</h4>
+        <p>Tu planta cuenta con todos los recursos mecánicos y de personal para el turno. Sin embargo, tu registro actual es <strong>${digitalizacion === 'papel' ? 'en papel' : digitalizacion === 'excel' ? 'por planillas Excel' : 'básico sin datos reales'}</strong>, lo que expone tu operación a retrasos por digitación humana.</p>
+      </div>`;
+  }
+
+  // Cálculos Financieros y Pérdidas estimadas en pesos chilenos (CLP)
+  const perdidaFinanciera = ((5 - mActivas) * 45000 * 8) + ((5 - oActivos) * 25000); 
+  const roiMeses = perdidaFinanciera > 150000 ? "2.2 Meses" : "4.5 Meses";
+
+  // OEE y OTIF Estimados
+  const oeeCalculado = Math.round((capMaquinas * capOperarios * 0.90) * 100);
+  const otifCalculado = Math.max(50, Math.round(capRealPlanta * 100));
+
+  // Semáforo OTIF
+  let clrSemaforo = "green";
+  if (otifCalculado < 95 && otifCalculado >= 80) clrSemaforo = "highlight";
+  if (otifCalculado < 80) clrSemaforo = "red";
+
+  // Obtener Dolores Seleccionados
+  const selectedPills = Array.from(pillsContainer.querySelectorAll('.pill.active'));
+  const selectedKeys = selectedPills.map(p => p.dataset.key);
+
+  // Tarjeta de Clientes (Dolor principal seleccionado)
+  let clientePain = { title: 'Trazabilidad y Calidad', desc: 'Asegurar la consistencia del producto final mediante el control digital.' };
+  if(selectedKeys.length > 0){
+    const primerDolor = selectedKeys[0];
+    clientePain = pains[primerDolor];
+  }
+
+  // Tarjeta de Aprendizaje y Crecimiento (Digitalización)
+  let digitalNote = "Migrar registros hacia una base de datos automatizada conectada directamente a los PLC.";
+  if (digitalizacion === 'papel') {
+    digitalNote = "Elminar el papel en planta. Los operadores registrarán mermas y causas directamente en terminales HMI integradas.";
+  } else if (digitalizacion === 'excel') {
+    digitalNote = "Migración de planillas manuales de Excel a tableros dinámicos autogenerados directo desde la línea de inyección/metalmecánica.";
+  }
+
+  const sectorLabels = { plastico: 'Plástico e Inyección', metalm: 'Metalmecánica y Manufactura', alimentos: 'Alimentos y Bebidas', packaging: 'Embalajes / Packaging' };
+  const tipoLabels = { pedido: 'Bajo pedido (a medida)', lotes: 'Por lotes (Batch)', continua: 'Continua' };
+
+  // Construcción del HTML de resultados
+  const resultsHTML = `
+    <div class="results-meta">
+      Reporte de Diagnóstico para el Sector <b>${sectorLabels[sector]}</b> • Producción <b>${tipoLabels[tipo]}</b>
+    </div>
+    
+    ${diagnosticoHTML}
+
+    <div class="objective">
+      <span>Objetivo estratégico de MG Proyectos</span>
+      Estabilizar la capacidad productiva reduciendo la variabilidad operativa generada por fallas imprevistas y ausentismo de personal.
+    </div>
+
+    <div class="quad-grid">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-perspective">Financiera</div>
+          <div class="card-theme">Resultados y costos</div>
+        </div>
+        <ul class="kpi-list">
+          <li class="kpi-item"><span class="kpi-name">Pérdida Estimada por Turno</span><span class="kpi-val highlight">$${perdidaFinanciera.toLocaleString('es-CL')} CLP</span></li>
+          <li class="kpi-item"><span class="kpi-name">Costo de Mantenimiento Correctivo</span><span class="kpi-val">$${(perdidaFinanciera * 0.15).toLocaleString('es-CL')} CLP</span></li>
+          <li class="kpi-item"><span class="kpi-name">ROI Estimado de Automatización</span><span class="kpi-val green">${roiMeses}</span></li>
+        </ul>
+        <div class="card-automation">
+          <div class="auto-label">Impacto Económico Directo</div>
+          <div class="auto-title">Reducción del Costo de Parada</div>
+          <div class="auto-desc">Eliminar tiempos muertos por falta de sincronización técnica reduce las pérdidas por turno hasta un 85%.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-perspective">Clientes</div>
+          <div class="card-theme">Plazos y calidad</div>
+        </div>
+        <ul class="kpi-list">
+          <li class="kpi-item"><span class="kpi-name">OTIF (Cumplimiento de Plazo)</span><span class="kpi-val ${clrSemaforo}">${otifCalculado}%</span></li>
+          <li class="kpi-item"><span class="kpi-name">Índice de Retornos y Rechazo</span><span class="kpi-val">1.2%</span></li>
+          <li class="kpi-item"><span class="kpi-name">Nivel de Servicio Técnico</span><span class="kpi-val green">Excelente</span></li>
+        </ul>
+        <div class="card-automation">
+          <div class="auto-label">Estrategia Tecnológica Sugerida</div>
+          <div class="auto-title">${clientePain.automation ? clientePain.automation.title : clientePain.title}</div>
+          <div class="auto-desc">${clientePain.automation ? clientePain.automation.desc : clientePain.desc}</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-perspective">Procesos internos</div>
+          <div class="card-theme">Eficiencia de planta</div>
+        </div>
+        <ul class="kpi-list">
+          <li class="kpi-item"><span class="kpi-name">OEE Estimado</span><span class="kpi-val highlight">${oeeCalculated}%</span></li>
+          <li class="kpi-item"><span class="kpi-name">Restricción de Recursos Activa</span><span class="kpi-val" style="font-size:0.8em;">${cuelloBotella}</span></li>
+          <li class="kpi-item"><span class="kpi-name">Disponibilidad de Máquinas</span><span class="kpi-val">${Math.round(capMaquinas * 100)}%</span></li>
+        </ul>
+        <div class="card-automation">
+          <div class="auto-label">Proyecto en Procesos Internos</div>
+          <div class="auto-title">${procesosAuto.title}</div>
+          <div class="auto-desc">${procesosAuto.desc}</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-perspective">Aprendizaje y Crecimiento</div>
+          <div class="card-theme">Personas y tecnología</div>
+        </div>
+        <ul class="kpi-list">
+          <li class="kpi-item"><span class="kpi-name">Índice de Trazabilidad Digital</span><span class="kpi-val highlight">${digitalizacion === 'papel' ? '0%' : digitalizacion === 'excel' ? '30%' : '50%'}</span></li>
+          <li class="kpi-item"><span class="kpi-name">Polivalencia del Personal</span><span class="kpi-val">${Math.round(capOperarios * 100)}%</span></li>
+          <li class="kpi-item"><span class="kpi-name">Tasa de Adopción de Tecnología</span><span class="kpi-val green">80%</span></li>
+        </ul>
+        <div class="card-automation">
+          <div class="auto-label">Plan de Adopción Digital</div>
+          <div class="auto-title">Digitalización de Reportes Operativos</div>
+          <div class="auto-desc">${digitalNote}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-cta">
+      <p>Este es un diagnóstico estratégico automático en base a la Teoría de Restricciones. Para coordinar un levantamiento de requerimientos y cotizar la automatización en tu planta real, haz clic en el botón.</p>
+      <a class="cta-btn" id="whatsapp_cta" href="#" target="_blank">Quiero coordinar un Diagnóstico Técnico en Planta</a>
+      <div class="cta-note">Servicio y Garantía liderados por Ingeniero de Sistemas Certificado.</div>
+    </div>
+  `;
+
+  const results = document.getElementById('results');
+  results.innerHTML = resultsHTML;
+  results.classList.add('show');
+
+  // Configurar link y mensaje dinámico para WhatsApp Business de MG Proyectos
+  const mensajePredefinido = `Hola MG Servicios, he simulado mi planta en el Cuadro de Mando Integral Interactiva:
+- Sector: ${sectorLabels[sector]}
+- Tipo Producción: ${tipoLabels[tipo]}
+- Nivel de digitalización: ${digitalizacion}
+- Simulación: ${mActivas} máquinas operando y ${oActivos} operarios en turno.
+- Restricción detectada: ${cuelloBotella}
+- Pérdida Estimada: $${perdidaFinanciera.toLocaleString('es-CL')} CLP por turno.
+Me gustaría agendar el diagnóstico de viabilidad técnica para automatizar mi planta.`;
+
+  document.getElementById('whatsapp_cta').href = `https://wa.me/56944983526?text=${encodeURIComponent(mensajePredefinido)}`;
+
+  // Scroll fluido al resultado para mejorar UX
+  results.scrollIntoView({behavior:'smooth', block:'start'});
+});
+</script>
+</body>
+</html>
