@@ -155,6 +155,13 @@
     min-width: 40px;
     text-align: right;
   }
+  .slider-note{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.7rem;
+    color:var(--dim);
+    margin-top:16px;
+    grid-column:1/-1;
+  }
   
   .pills-label{
     font-family:'IBM Plex Mono',monospace;
@@ -304,6 +311,7 @@
     border:1px solid var(--border);
     padding:16px;
   }
+  .card-automation + .card-automation{margin-top:12px;}
   .auto-label{
     font-family:'IBM Plex Mono',monospace;
     font-size:0.65rem;
@@ -378,7 +386,7 @@
     </div>
     <div class="meta-grid">
       <div class="meta-item"><div class="meta-label">Proyecto</div><div class="meta-val" style="font-size: 0.75em;">CMI-PROD</div></div>
-      <div class="meta-item"><div class="meta-label">Versión</div><div class="meta-val">11.3</div></div>
+      <div class="meta-item"><div class="meta-label">Versión</div><div class="meta-val">12.0</div></div>
       <div class="meta-item"><div class="meta-label">Fecha</div><div class="meta-val" style="font-size: 0.75em;">15/07/2026</div></div>
       <div class="meta-item"><div class="meta-label">Escala</div><div class="meta-val">Industrial</div></div>
     </div>
@@ -429,10 +437,11 @@
           <span id="txt_operarios" class="slider-val">5</span>
         </div>
       </div>
+      <div class="slider-note">* Escala reducida (1–5) representativa de tu turno, independiente del tamaño real de tu planta.</div>
     </div>
   </div>
 
-  <div class="section-title">03 • Principales dolores hoy (Elige hasta 3)</div>
+  <div class="section-title">02 • Principales dolores hoy (Elige hasta 3)</div>
   <div class="panel">
     <div class="pills-label">Selecciona los desafíos que más impactan hoy tu rentabilidad:</div>
     <div class="pills-container" id="pills_container">
@@ -445,7 +454,7 @@
   </div>
 
   <div class="footer-contact">
-    <div>📞 Llamada Directa: <a href="tel:+56940153797">+569 4015 3797</a></div>
+    <div>📞 Llamada Directa: <a href="tel:+56944983526">+569 4498 3526</a></div>
     <div>💬 WhatsApp: <a href="https://wa.me/56944983526" target="_blank">+569 4498 3526</a></div>
     <div>📸 Instagram: <a href="https://www.instagram.com/mgledlights/" target="_blank">@mgledlights</a></div>
   </div>
@@ -461,6 +470,9 @@ const pains = {
   retrasos: { text: 'Entregas fuera de plazo', automation: { title: 'Visualización de Progreso en Tiempo Real (Andon)', desc: 'Monitoreo automático de la velocidad de línea frente al objetivo para alertar desviaciones de inmediato.' } },
   visibilidad: { text: 'Sin visibilidad de datos en tiempo real', automation: { title: 'Dashboard SCADA Centralizado de Planta', desc: 'Conexión de todos los sensores de planta hacia una única interfaz gráfica que consolida los KPIs por turno.' } }
 };
+
+// Multiplicador de costo por sector (referencial, ajustable con datos reales del cliente)
+const sectorMultiplier = { plastico: 1.0, metalm: 1.3, alimentos: 0.9, packaging: 0.8 };
 
 // Renderizado inicial de píldoras
 const pillsContainer = document.getElementById('pills_container');
@@ -544,7 +556,8 @@ document.getElementById('generate_btn').addEventListener('click', () => {
       </div>`;
   }
 
-  const perdidaFinanciera = ((5 - mActivas) * 45000 * 8) + ((5 - oActivos) * 25000); 
+  const multiplicadorSector = sectorMultiplier[sector] || 1.0;
+  const perdidaFinanciera = Math.round((((5 - mActivas) * 45000 * 8) + ((5 - oActivos) * 25000)) * multiplicadorSector);
   const roiMeses = perdidaFinanciera > 150000 ? "2.2 Meses" : "4.5 Meses";
 
   const oeeCalculado = Math.round((capMaquinas * capOperarios * 0.90) * 100);
@@ -554,17 +567,25 @@ document.getElementById('generate_btn').addEventListener('click', () => {
   if (otifCalculado < 95 && otifCalculado >= 80) clrSemaforo = "highlight";
   if (otifCalculado < 80) clrSemaforo = "red";
 
-  // CORRECCIÓN DIRECTA DEL ACCESO A LAS PÍLDORAS ACTIVAS
   const activePillsInDOM = document.querySelectorAll('#pills_container .pill.active');
   const selectedKeys = Array.from(activePillsInDOM).map(p => p.getAttribute('data-key') || p.dataset.key);
 
-  let clientePain = { title: 'Trazabilidad y Calidad', desc: 'Asegurar la consistencia del producto final mediante el control digital.' };
-  if(selectedKeys.length > 0){
-    const primerDolor = selectedKeys[0];
-    if(pains[primerDolor]) {
-      clientePain = pains[primerDolor];
-    }
+  // Recomendaciones: se usan TODOS los dolores seleccionados (hasta 3), no solo el primero
+  let recomendaciones = selectedKeys
+    .filter(key => pains[key])
+    .map(key => pains[key].automation);
+
+  if (recomendaciones.length === 0) {
+    recomendaciones = [{ title: 'Trazabilidad y Calidad', desc: 'Asegurar la consistencia del producto final mediante el control digital.' }];
   }
+
+  const recomendacionesHTML = recomendaciones.map(rec => `
+    <div class="card-automation">
+      <div class="auto-label">Estrategia Tecnológica Sugerida</div>
+      <div class="auto-title">${rec.title}</div>
+      <div class="auto-desc">${rec.desc}</div>
+    </div>
+  `).join('');
 
   let digitalNote = "Migrar registros hacia una base de datos automatizada conectada directamente a los PLC.";
   if (digitalizacion === 'papel') {
@@ -575,6 +596,7 @@ document.getElementById('generate_btn').addEventListener('click', () => {
 
   const sectorLabels = { plastico: 'Plástico e Inyección', metalm: 'Metalmecánica y Manufactura', alimentos: 'Alimentos y Bebidas', packaging: 'Embalajes / Packaging' };
   const tipoLabels = { pedido: 'Bajo pedido (a medida)', lotes: 'Por lotes (Batch)', continua: 'Continua' };
+  const dolorLabels = selectedKeys.filter(k => pains[k]).map(k => pains[k].text);
 
   const resultsHTML = `
     <div class="results-meta">
@@ -596,7 +618,7 @@ document.getElementById('generate_btn').addEventListener('click', () => {
         </div>
         <ul class="kpi-list">
           <li class="kpi-item"><span class="kpi-name">Pérdida Estimada por Turno</span><span class="kpi-val highlight">$${perdidaFinanciera.toLocaleString('es-CL')} CLP</span></li>
-          <li class="kpi-item"><span class="kpi-name">Costo de Mantenimiento Correctivo</span><span class="kpi-val">$${(perdidaFinanciera * 0.15).toLocaleString('es-CL')} CLP</span></li>
+          <li class="kpi-item"><span class="kpi-name">Costo de Mantenimiento Correctivo</span><span class="kpi-val">$${Math.round(perdidaFinanciera * 0.15).toLocaleString('es-CL')} CLP</span></li>
           <li class="kpi-item"><span class="kpi-name">ROI Estimado de Automatización</span><span class="kpi-val green">${roiMeses}</span></li>
         </ul>
         <div class="card-automation">
@@ -616,11 +638,7 @@ document.getElementById('generate_btn').addEventListener('click', () => {
           <li class="kpi-item"><span class="kpi-name">Índice de Retornos y Rechazo</span><span class="kpi-val">1.2%</span></li>
           <li class="kpi-item"><span class="kpi-name">Nivel de Servicio Técnico</span><span class="kpi-val green">Excelente</span></li>
         </ul>
-        <div class="card-automation">
-          <div class="auto-label">Estrategia Tecnológica Sugerida</div>
-          <div class="auto-title">${clientePain.automation ? clientePain.automation.title : clientePain.title}</div>
-          <div class="auto-desc">${clientePain.automation ? clientePain.automation.desc : clientePain.desc}</div>
-        </div>
+        ${recomendacionesHTML}
       </div>
 
       <div class="card">
@@ -669,12 +687,15 @@ document.getElementById('generate_btn').addEventListener('click', () => {
   results.innerHTML = resultsHTML;
   results.classList.add('show');
 
+  const dolorTexto = dolorLabels.length > 0 ? dolorLabels.join(', ') : 'No especificado';
+
   const mensajePredefinido = `Hola MG Servicios, he simulado mi planta en el Cuadro de Mando Integral Interactiva:
 - Sector: ${sectorLabels[sector]}
 - Tipo Producción: ${tipoLabels[tipo]}
 - Nivel de digitalización: ${digitalizacion}
 - Simulación: ${mActivas} máquinas operando y ${oActivos} operarios en turno.
 - Restricción detectada: ${cuelloBotella}
+- Principales dolores: ${dolorTexto}
 - Pérdida Estimada: $${perdidaFinanciera.toLocaleString('es-CL')} CLP por turno.
 Me gustaría agendar el diagnóstico de viabilidad técnica para automatizar mi planta.`;
 
