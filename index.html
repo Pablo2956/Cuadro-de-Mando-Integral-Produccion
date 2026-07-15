@@ -7,7 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root{\n    --bg:#0B2138;
+  :root {
+    --bg:#0B2138;
     --bg-panel:#0F2A45;
     --bg-panel-2:#123253;
     --grid-line: rgba(111,183,224,0.14);
@@ -131,7 +132,6 @@
   }
   .field-group select:focus{border-color:var(--cyan);}
 
-  /* Estilos de los Sliders de Simulación */
   .slider-container {
     display: flex;
     align-items: center;
@@ -202,7 +202,6 @@
   .results{display:none;margin-top:40px;}
   .results.show{display:block;}
   
-  /* DIAGNÓSTICO DE PARADAS & CUELLOS */
   .diagnostico-alerta {
     background: rgba(240, 168, 60, 0.08);
     border: 1px solid var(--amber);
@@ -342,7 +341,6 @@
     margin-top:12px;
   }
 
-  /* Footer de Contacto Fijo Adicional */
   .footer-contact {
     margin-top: 40px;
     border-top: 2px dashed var(--border);
@@ -438,13 +436,13 @@
   <div class="panel">
     <div class="pills-label">Selecciona los desafíos que más impactan hoy tu rentabilidad:</div>
     <div class="pills-container" id="pills_container">
-      </div>
+    </div>
   </div>
 
   <button class="action-btn" id="generate_btn">Generar cuadro de mando →</button>
 
   <div class="results" id="results">
-    </div>
+  </div>
 
   <div class="footer-contact">
     <div>📞 Llamada Directa: <a href="tel:+56940153797">+569 4015 3797</a></div>
@@ -455,7 +453,6 @@
 </div>
 
 <script>
-// Base de Datos de Dolores y sus Estrategias Asociadas
 const pains = {
   paradas: { text: 'Paradas no planificadas', automation: { title: 'Mantenimiento Predictivo con Sensores IoT', desc: 'Monitoreo dinámico de vibración y corriente en motores de extrusoras para detectar fallas críticas antes de que la máquina se detenga por completo.' } },
   trazabilidad: { text: 'Falta de trazabilidad', automation: { title: 'Sistema de Captura de Datos IoT (Trazabilidad Automática)', desc: 'Registro en tiempo real de cada orden de producción asignada mediante RFID o códigos de barras integrados a los PLC.' } },
@@ -485,7 +482,6 @@ Object.keys(pains).forEach(key => {
   pillsContainer.appendChild(pill);
 });
 
-// Función para actualizar los textos de los Sliders
 function actualizarSlider(id, val) {
   document.getElementById(id).innerText = val;
 }
@@ -499,7 +495,6 @@ document.getElementById('generate_btn').addEventListener('click', () => {
   const mActivas = parseInt(document.getElementById('slider_maquinas').value);
   const oActivos = parseInt(document.getElementById('slider_operarios').value);
 
-  // Lógica de Cuellos de Botella (TOC)
   const capMaquinas = mActivas / 5;
   const capOperarios = oActivos / 5;
   const capRealPlanta = Math.min(capMaquinas, capOperarios);
@@ -549,34 +544,31 @@ document.getElementById('generate_btn').addEventListener('click', () => {
       </div>`;
   }
 
-  // Cálculos Financieros y Pérdidas estimadas en pesos chilenos (CLP)
   const perdidaFinanciera = ((5 - mActivas) * 45000 * 8) + ((5 - oActivos) * 25000); 
   const roiMeses = perdidaFinanciera > 150000 ? "2.2 Meses" : "4.5 Meses";
 
-  // OEE y OTIF Estimados
   const oeeCalculado = Math.round((capMaquinas * capOperarios * 0.90) * 100);
   const otifCalculado = Math.max(50, Math.round(capRealPlanta * 100));
 
-  // Semáforo OTIF
   let clrSemaforo = "green";
   if (otifCalculado < 95 && otifCalculado >= 80) clrSemaforo = "highlight";
   if (otifCalculado < 80) clrSemaforo = "red";
 
-  // Obtener Dolores Seleccionados
-  const selectedPills = Array.from(pillsContainer.querySelectorAll('.pill.active'));
-  const selectedKeys = selectedPills.map(p => p.dataset.key);
+  // CORRECCIÓN DIRECTA DEL ACCESO A LAS PÍLDORAS ACTIVAS
+  const activePillsInDOM = document.querySelectorAll('#pills_container .pill.active');
+  const selectedKeys = Array.from(activePillsInDOM).map(p => p.getAttribute('data-key') || p.dataset.key);
 
-  // Tarjeta de Clientes (Dolor principal seleccionado)
   let clientePain = { title: 'Trazabilidad y Calidad', desc: 'Asegurar la consistencia del producto final mediante el control digital.' };
   if(selectedKeys.length > 0){
     const primerDolor = selectedKeys[0];
-    clientePain = pains[primerDolor];
+    if(pains[primerDolor]) {
+      clientePain = pains[primerDolor];
+    }
   }
 
-  // Tarjeta de Aprendizaje y Crecimiento (Digitalización)
   let digitalNote = "Migrar registros hacia una base de datos automatizada conectada directamente a los PLC.";
   if (digitalizacion === 'papel') {
-    digitalNote = "Elminar el papel en planta. Los operadores registrarán mermas y causas directamente en terminales HMI integradas.";
+    digitalNote = "Eliminar el papel en planta. Los operadores registrarán mermas y causas directamente en terminales HMI integradas.";
   } else if (digitalizacion === 'excel') {
     digitalNote = "Migración de planillas manuales de Excel a tableros dinámicos autogenerados directo desde la línea de inyección/metalmecánica.";
   }
@@ -584,7 +576,6 @@ document.getElementById('generate_btn').addEventListener('click', () => {
   const sectorLabels = { plastico: 'Plástico e Inyección', metalm: 'Metalmecánica y Manufactura', alimentos: 'Alimentos y Bebidas', packaging: 'Embalajes / Packaging' };
   const tipoLabels = { pedido: 'Bajo pedido (a medida)', lotes: 'Por lotes (Batch)', continua: 'Continua' };
 
-  // Construcción del HTML de resultados
   const resultsHTML = `
     <div class="results-meta">
       Reporte de Diagnóstico para el Sector <b>${sectorLabels[sector]}</b> • Producción <b>${tipoLabels[tipo]}</b>
@@ -638,7 +629,7 @@ document.getElementById('generate_btn').addEventListener('click', () => {
           <div class="card-theme">Eficiencia de planta</div>
         </div>
         <ul class="kpi-list">
-          <li class="kpi-item"><span class="kpi-name">OEE Estimado</span><span class="kpi-val highlight">${oeeCalculated}%</span></li>
+          <li class="kpi-item"><span class="kpi-name">OEE Estimado</span><span class="kpi-val highlight">${oeeCalculado}%</span></li>
           <li class="kpi-item"><span class="kpi-name">Restricción de Recursos Activa</span><span class="kpi-val" style="font-size:0.8em;">${cuelloBotella}</span></li>
           <li class="kpi-item"><span class="kpi-name">Disponibilidad de Máquinas</span><span class="kpi-val">${Math.round(capMaquinas * 100)}%</span></li>
         </ul>
@@ -678,7 +669,6 @@ document.getElementById('generate_btn').addEventListener('click', () => {
   results.innerHTML = resultsHTML;
   results.classList.add('show');
 
-  // Configurar link y mensaje dinámico para WhatsApp Business de MG Proyectos
   const mensajePredefinido = `Hola MG Servicios, he simulado mi planta en el Cuadro de Mando Integral Interactiva:
 - Sector: ${sectorLabels[sector]}
 - Tipo Producción: ${tipoLabels[tipo]}
@@ -690,7 +680,6 @@ Me gustaría agendar el diagnóstico de viabilidad técnica para automatizar mi 
 
   document.getElementById('whatsapp_cta').href = `https://wa.me/56944983526?text=${encodeURIComponent(mensajePredefinido)}`;
 
-  // Scroll fluido al resultado para mejorar UX
   results.scrollIntoView({behavior:'smooth', block:'start'});
 });
 </script>
